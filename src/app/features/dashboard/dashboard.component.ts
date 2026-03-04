@@ -150,14 +150,9 @@ export class DashboardComponent implements OnInit {
   data = signal<DashboardData | null>(null);
 
   ngOnInit(): void {
-    // Dashboard data would be loaded from API
-    // For now, showing placeholder data
-    this.data.set({
-      totalVendasAno: 125000.00,
-      totalVendasMes: 15000.00,
-      ticketMedio: 250.00,
-      valorEstoque: 85000.00,
-      totalClientes: 150
+    this.http.get<DashboardData>(`${environment.apiUrl}/dashboard`).subscribe({
+      next: (data) => this.data.set(data),
+      error: () => this.data.set(null)
     });
   }
 
