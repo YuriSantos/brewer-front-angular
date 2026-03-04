@@ -6,6 +6,7 @@ import { ClienteService } from '../services/cliente.service';
 import { Cliente, ClienteFilter } from '../models/cliente.model';
 import { Page } from '../../../core/models/page.model';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-cliente-list',
@@ -174,6 +175,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class ClienteListComponent implements OnInit {
   private clienteService = inject(ClienteService);
   private notificationService = inject(NotificationService);
+  private confirmService = inject(ConfirmService);
 
   clientes = signal<Cliente[]>([]);
   page = signal<Page<Cliente> | null>(null);
@@ -193,8 +195,8 @@ export class ClienteListComponent implements OnInit {
         this.page.set(page);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar clientes');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar clientes');
         this.loading.set(false);
       }
     });
@@ -215,15 +217,21 @@ export class ClienteListComponent implements OnInit {
     this.loadClientes();
   }
 
-  confirmDelete(cliente: Cliente): void {
-    if (confirm(`Deseja realmente excluir o cliente "${cliente.nome}"?`)) {
+  async confirmDelete(cliente: Cliente): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Excluir Cliente',
+      message: `Deseja realmente excluir o cliente "${cliente.nome}"?`,
+      confirmText: 'Excluir',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.clienteService.delete(cliente.id).subscribe({
         next: () => {
           this.notificationService.success('Cliente excluido com sucesso');
           this.loadClientes();
         },
-        error: () => {
-          this.notificationService.error('Erro ao excluir cliente');
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Erro ao excluir cliente');
         }
       });
     }

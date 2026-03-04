@@ -6,6 +6,7 @@ import { VendaService } from '../services/venda.service';
 import { Venda, VendaFilter, StatusVenda, STATUS_VENDA_LABELS, STATUS_VENDA_COLORS } from '../models/venda.model';
 import { Page } from '../../../core/models/page.model';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
   selector: 'app-venda-list',
@@ -202,6 +203,7 @@ import { NotificationService } from '../../../core/services/notification.service
 export class VendaListComponent implements OnInit {
   private vendaService = inject(VendaService);
   private notificationService = inject(NotificationService);
+  private confirmService = inject(ConfirmService);
 
   vendas = signal<Venda[]>([]);
   page = signal<Page<Venda> | null>(null);
@@ -221,8 +223,8 @@ export class VendaListComponent implements OnInit {
         this.page.set(page);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar vendas');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar vendas');
         this.loading.set(false);
       }
     });
@@ -251,29 +253,41 @@ export class VendaListComponent implements OnInit {
     return STATUS_VENDA_COLORS[status];
   }
 
-  emitir(venda: Venda): void {
-    if (confirm(`Deseja realmente emitir a venda #${venda.id}?`)) {
+  async emitir(venda: Venda): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Emitir Venda',
+      message: `Deseja realmente emitir a venda #${venda.id}?`,
+      confirmText: 'Emitir',
+      type: 'warning'
+    });
+    if (confirmed) {
       this.vendaService.emitir(venda.id).subscribe({
         next: () => {
           this.notificationService.success('Venda emitida com sucesso');
           this.loadVendas();
         },
-        error: () => {
-          this.notificationService.error('Erro ao emitir venda');
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Erro ao emitir venda');
         }
       });
     }
   }
 
-  cancelar(venda: Venda): void {
-    if (confirm(`Deseja realmente cancelar a venda #${venda.id}?`)) {
+  async cancelar(venda: Venda): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Cancelar Venda',
+      message: `Deseja realmente cancelar a venda #${venda.id}?`,
+      confirmText: 'Cancelar Venda',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.vendaService.cancelar(venda.id).subscribe({
         next: () => {
           this.notificationService.success('Venda cancelada com sucesso');
           this.loadVendas();
         },
-        error: () => {
-          this.notificationService.error('Erro ao cancelar venda');
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Erro ao cancelar venda');
         }
       });
     }

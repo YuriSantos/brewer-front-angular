@@ -222,7 +222,7 @@ export class ClienteFormComponent implements OnInit {
   loadEstados(): void {
     this.clienteService.getEstados().subscribe({
       next: (estados) => this.estados.set(estados),
-      error: () => this.notificationService.error('Erro ao carregar estados')
+      error: (err) => this.notificationService.error(err.error?.message || 'Erro ao carregar estados')
     });
   }
 
@@ -257,8 +257,8 @@ export class ClienteFormComponent implements OnInit {
           }
         }
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar cliente');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar cliente');
         this.router.navigate(['/clientes']);
       }
     });
@@ -290,8 +290,8 @@ export class ClienteFormComponent implements OnInit {
           error: () => this.buscandoCep.set(false)
         });
       },
-      error: () => {
-        this.notificationService.error('CEP nao encontrado');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'CEP nao encontrado');
         this.buscandoCep.set(false);
       }
     });
@@ -305,7 +305,7 @@ export class ClienteFormComponent implements OnInit {
     if (estadoId) {
       this.clienteService.getCidadesByEstado(estadoId).subscribe({
         next: (cidades) => this.cidades.set(cidades),
-        error: () => this.notificationService.error('Erro ao carregar cidades')
+        error: (err) => this.notificationService.error(err.error?.message || 'Erro ao carregar cidades')
       });
     }
   }
@@ -342,8 +342,8 @@ export class ClienteFormComponent implements OnInit {
         );
         this.router.navigate(['/clientes']);
       },
-      error: () => {
-        this.notificationService.error('Erro ao salvar cliente');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao salvar cliente');
         this.saving.set(false);
       }
     });

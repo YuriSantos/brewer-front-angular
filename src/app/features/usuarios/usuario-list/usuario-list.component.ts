@@ -238,7 +238,7 @@ export class UsuarioListComponent implements OnInit {
   loadGrupos(): void {
     this.usuarioService.getGrupos().subscribe({
       next: (grupos) => this.grupos.set(grupos),
-      error: () => this.notificationService.error('Erro ao carregar grupos')
+      error: (err) => this.notificationService.error(err.error?.message || 'Erro ao carregar grupos')
     });
   }
 
@@ -256,8 +256,8 @@ export class UsuarioListComponent implements OnInit {
         this.selectedIds.set([]);
         this.loading.set(false);
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar usuarios');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar usuarios');
         this.loading.set(false);
       }
     });
@@ -315,7 +315,7 @@ export class UsuarioListComponent implements OnInit {
         this.notificationService.success('Usuarios ativados com sucesso');
         this.loadUsuarios();
       },
-      error: () => this.notificationService.error('Erro ao ativar usuarios')
+      error: (err) => this.notificationService.error(err.error?.message || 'Erro ao ativar usuarios')
     });
   }
 
@@ -326,7 +326,7 @@ export class UsuarioListComponent implements OnInit {
         this.notificationService.success('Usuarios desativados com sucesso');
         this.loadUsuarios();
       },
-      error: () => this.notificationService.error('Erro ao desativar usuarios')
+      error: (err) => this.notificationService.error(err.error?.message || 'Erro ao desativar usuarios')
     });
   }
 }

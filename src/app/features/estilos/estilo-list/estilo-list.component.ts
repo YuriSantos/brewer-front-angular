@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EstiloService } from '../services/estilo.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Estilo } from '../../cervejas/models/cerveja.model';
 
 @Component({
@@ -149,6 +150,7 @@ import { Estilo } from '../../cervejas/models/cerveja.model';
 export class EstiloListComponent implements OnInit {
   private estiloService = inject(EstiloService);
   private notification = inject(NotificationService);
+  private confirmService = inject(ConfirmService);
 
   estilos = signal<Estilo[]>([]);
   modalAberto = signal(false);
@@ -195,8 +197,14 @@ export class EstiloListComponent implements OnInit {
     });
   }
 
-  excluir(estilo: Estilo): void {
-    if (confirm(`Deseja excluir o estilo "${estilo.nome}"?`)) {
+  async excluir(estilo: Estilo): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Excluir Estilo',
+      message: `Deseja excluir o estilo "${estilo.nome}"?`,
+      confirmText: 'Excluir',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.estiloService.excluir(estilo.codigo).subscribe({
         next: () => {
           this.notification.success('Estilo excluido com sucesso!');

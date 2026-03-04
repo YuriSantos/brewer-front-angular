@@ -230,7 +230,7 @@ export class UsuarioFormComponent implements OnInit {
   loadGrupos(): void {
     this.usuarioService.getGrupos().subscribe({
       next: (grupos) => this.grupos.set(grupos),
-      error: () => this.notificationService.error('Erro ao carregar grupos')
+      error: (err) => this.notificationService.error(err.error?.message || 'Erro ao carregar grupos')
     });
   }
 
@@ -247,8 +247,8 @@ export class UsuarioFormComponent implements OnInit {
         this.selectedGruposIds.set(gruposIds);
         this.form.get('gruposIds')?.setValue(gruposIds);
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar usuario');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar usuario');
         this.router.navigate(['/usuarios']);
       }
     });
@@ -306,8 +306,8 @@ export class UsuarioFormComponent implements OnInit {
         );
         this.router.navigate(['/usuarios']);
       },
-      error: () => {
-        this.notificationService.error('Erro ao salvar usuario');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao salvar usuario');
         this.saving.set(false);
       }
     });

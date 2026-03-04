@@ -10,6 +10,7 @@ import { CervejaService } from '../../cervejas/services/cerveja.service';
 import { Cliente } from '../../clientes/models/cliente.model';
 import { Cerveja } from '../../cervejas/models/cerveja.model';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 
 interface ItemForm {
   cerveja: Cerveja | null;
@@ -365,6 +366,7 @@ export class VendaFormComponent implements OnInit, OnDestroy {
   private clienteService = inject(ClienteService);
   private cervejaService = inject(CervejaService);
   private notificationService = inject(NotificationService);
+  private confirmService = inject(ConfirmService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -456,8 +458,8 @@ export class VendaFormComponent implements OnInit, OnDestroy {
         this.valorDesconto = venda.valorDesconto || 0;
         this.observacao = venda.observacao || '';
       },
-      error: () => {
-        this.notificationService.error('Erro ao carregar venda');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao carregar venda');
         this.router.navigate(['/vendas']);
       }
     });
@@ -568,15 +570,21 @@ export class VendaFormComponent implements OnInit, OnDestroy {
         }
         this.saving.set(false);
       },
-      error: () => {
-        this.notificationService.error('Erro ao salvar venda');
+      error: (err) => {
+        this.notificationService.error(err.error?.message || 'Erro ao salvar venda');
         this.saving.set(false);
       }
     });
   }
 
-  emitir(): void {
-    if (confirm('Deseja realmente emitir esta venda?')) {
+  async emitir(): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Emitir Venda',
+      message: 'Deseja realmente emitir esta venda?',
+      confirmText: 'Emitir',
+      type: 'warning'
+    });
+    if (confirmed) {
       this.saving.set(true);
       this.vendaService.emitir(this.vendaId!).subscribe({
         next: () => {
@@ -584,16 +592,22 @@ export class VendaFormComponent implements OnInit, OnDestroy {
           this.loadVenda(this.vendaId!);
           this.saving.set(false);
         },
-        error: () => {
-          this.notificationService.error('Erro ao emitir venda');
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Erro ao emitir venda');
           this.saving.set(false);
         }
       });
     }
   }
 
-  cancelar(): void {
-    if (confirm('Deseja realmente cancelar esta venda?')) {
+  async cancelar(): Promise<void> {
+    const confirmed = await this.confirmService.confirm({
+      title: 'Cancelar Venda',
+      message: 'Deseja realmente cancelar esta venda?',
+      confirmText: 'Cancelar Venda',
+      type: 'danger'
+    });
+    if (confirmed) {
       this.saving.set(true);
       this.vendaService.cancelar(this.vendaId!).subscribe({
         next: () => {
@@ -601,8 +615,8 @@ export class VendaFormComponent implements OnInit, OnDestroy {
           this.loadVenda(this.vendaId!);
           this.saving.set(false);
         },
-        error: () => {
-          this.notificationService.error('Erro ao cancelar venda');
+        error: (err) => {
+          this.notificationService.error(err.error?.message || 'Erro ao cancelar venda');
           this.saving.set(false);
         }
       });
